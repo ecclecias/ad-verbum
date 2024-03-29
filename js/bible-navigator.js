@@ -7,6 +7,10 @@ function BibleNavigator() {
     var marked_verses = [];
 
     function _listenerEvents() {
+        window.onhashchange = () => {
+            console.log(window.location.hash);
+        }
+
         wrapper_verses.forEach(verse => {
             verse.addEventListener("click", () => {
                 _toggleElementInArray(marked_verses, verse.id);
@@ -32,18 +36,18 @@ function BibleNavigator() {
     function setup() {
         _listenerEvents();
 
-        // Set Gn 1:1 to newbie
-        if (window.location.hash == "" && !localStorage.bibleHash) setHash("gn_1");
+        let { book, chapter, verse } = window.location.hash != ""
+            ? splitHash(window.location.hash)
+            : splitHash();
+            
+        // Jó fix
+        book = book.replace(/%C3%B3/g, "ó");
 
-        const { book, chapter, verse } = splitHash();
+        if (!book) book = "gn";
+        bookAction(`${book}`);
 
-        if (book) {
-            bookAction(`${book}`);
-        }
-
-        if (chapter) {
-            chapterAction(`${book}_${chapter}`);
-        }
+        if (!chapter) chapter = 1;
+        chapterAction(`${book}_${chapter}`);
 
         if (verse) {
             if (verse.includes(".")) {
@@ -71,19 +75,22 @@ function BibleNavigator() {
             }
 
             scrollToAnchor(`#${book}_${chapter}_${verse}`);
+
+
+            setHash(`${book}_${chapter}_${verse}`);
         }
     }
 
     function bookAction(id) {
         buttons_books.forEach(abbrev => abbrev.classList.remove('active'));
 
-        const current_book = document.querySelector(`#${id}`);
+        const current_book = document.querySelector(`button[data-id="${id}"]`);
         current_book.classList.add('active');
 
         document.querySelector('.wrapper-chapters>div:not(.d-none)')?.classList.add('d-none');
         document.querySelector('.wrapper-verses>div:not(.d-none)')?.classList.add('d-none');
 
-        document.querySelector(`.wrapper-chapters .${id}`).classList.remove('d-none');
+        document.querySelector(`.wrapper-chapters div[data-class="${id}"]`).classList.remove('d-none');
 
         const wrapperBooks = document.querySelector('.wrapper-books');
         const yOffset = current_book.getBoundingClientRect().left + window.pageYOffset;
@@ -99,11 +106,11 @@ function BibleNavigator() {
     function chapterAction(id) {
         buttons_chapters.forEach(abbrev => abbrev.classList.remove('active'));
 
-        const current_chapter = document.querySelector(`#${id}`)
+        const current_chapter = document.querySelector(`button[data-id="${id}"]`);
         current_chapter.classList.add('active');
 
         document.querySelector('.wrapper-verses>div:not(.d-none)')?.classList.add('d-none');
-        document.querySelector(`.${id}`).classList.remove('d-none');
+        document.querySelector(`div[data-class="${id}"]`).classList.remove('d-none');
 
         const wrapperChapters = document.querySelector('.wrapper-chapters');
         const yOffset = current_chapter.getBoundingClientRect().left + window.pageYOffset;
@@ -191,8 +198,8 @@ function BibleNavigator() {
         localStorage.bibleHash = hash;
     }
 
-    function splitHash() {
-        _hash = localStorage.bibleHash;
+    function splitHash(hash = null) {
+        _hash = hash ? hash.replace("#", "") : localStorage.bibleHash;
         _hash_splitted = _hash.split("_");
 
         book = _hash_splitted[0];

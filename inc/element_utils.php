@@ -15,7 +15,7 @@ function createVerse($verse_number, $verse, $id, $chapter)
     $_e = str_replace("{verse_number}", $verse_number ? $verse_number : "", $_e);
     $_e = str_replace("{verse}", $verse ? $verse : "", $_e);
     $_e = str_replace("{id}", $id ? $id : "", $_e);
-    $_e = str_replace("{span_class}", $chapter ? $chapter : "", $_e);
+    $_e = str_replace("{class}", $chapter ? $chapter : "", $_e);
 
     return $_e;
 }
@@ -29,6 +29,8 @@ function createButton($id, $class, $name, $type = "button")
     $_e = str_replace("{name}", $name ? $name : "", $_e);
     $_e = str_replace("{type}", $type ? $type : "", $_e);
 
+    $_e = str_replace("{data_id}", $id ? $id  : "", $_e);
+
     return $_e;
 }
 
@@ -38,6 +40,10 @@ function createWrapperElement($content, $class = "wrapper")
 
     $_e = str_replace("{content}", $content ? $content : "", $_e);
     $_e = str_replace("{class}", $class ? $class : "", $_e);
+
+    $data_class = explode(" ", $class)[0];
+
+    $_e = str_replace("{data_class}", $data_class ? $data_class : "", $_e);
 
     return $_e;
 }
